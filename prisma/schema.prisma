@@ -78,3 +78,11 @@ model StalenessFlagEvent {
 
   @@index([issuerId])
 }
+
+// Singleton row (id="main") tracking indexer progress through contract events.
+model IndexerCursor {
+  id          String   @id @default("main")
+  pagingToken String?
+  lastLedger  Int?
+  updatedAt   DateTime @updatedAt
+}

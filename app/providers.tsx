@@ -1,11 +1,22 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Keypair } from '@stellar/stellar-sdk';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { StellarWalletsKit, Networks } from '@creit.tech/stellar-wallets-kit';
+import { FreighterModule } from '@creit.tech/stellar-wallets-kit/modules/freighter';
+import { xBullModule } from '@creit.tech/stellar-wallets-kit/modules/xbull';
+import { LobstrModule } from '@creit.tech/stellar-wallets-kit/modules/lobstr';
 
 export interface User {
   publicKey: string;
   role: 'admin' | 'issuer' | 'attestor' | 'public';
+}
+
+export interface WalletSigner {
+  publicKey: string;
+  signTransaction: (
+    tx: string,
+    opts?: { network?: string; networkPassphrase?: string; accountToSign?: string }
+  ) => Promise<string>;
 }
 
 interface WalletContextType {
@@ -14,9 +25,13 @@ interface WalletContextType {
   login: () => Promise<void>;
   logout: () => void;
   error: string | null;
+  /** A signer object compatible with ReserveProofClient's `signer` config, or null if not connected. */
+  signer: WalletSigner | null;
 }
 
 const WalletContext = createContext<WalletContextType | undefined>(undefined);
+
+const NETWORK_PASSPHRASE = process.env.NEXT_PUBLIC_NETWORK_PASSPHRASE ?? Networks.TESTNET;
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -42,34 +57,66 @@ export function Providers({ children }: { children: React.ReactNode }) {
   );
 }
 
+function makeSigner(publicKey: string): WalletSigner {
+  return {
+    publicKey,
+    signTransaction: async (tx, opts) => {
+      const { signedTxXdr } = await StellarWalletsKit.signTransaction(tx, {
+        networkPassphrase: opts?.networkPassphrase ?? NETWORK_PASSPHRASE,
+        address: publicKey,
+      });
+      return signedTxXdr;
+    },
+  };
+}
+
 function WalletProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const login = async () => {
+  useEffect(() => {
+    StellarWalletsKit.init({
+      modules: [new FreighterModule(), new xBullModule(), new LobstrModule()],
+      network: NETWORK_PASSPHRASE as Networks,
+    });
+
+    // Restore a previously connected wallet, if the browser extension still reports one.
+    StellarWalletsKit.getAddress()
+      .then(({ address }) => {
+        if (address) {
+          setUser({ publicKey: address, role: 'public' });
+          setIsConnected(true);
+        }
+      })
+      .catch(() => {
+        // No wallet connected yet -- nothing to restore.
+      });
+  }, []);
+
+  const login = useCallback(async () => {
     try {
       setError(null);
-      // TODO: Implement wallet connection via Stellar Wallets Kit
-      // For now, simulate with random keypair
-      const keypair = Keypair.random();
-      setUser({
-        publicKey: keypair.publicKey(),
-        role: 'public',
-      });
+      const { address } = await StellarWalletsKit.authModal();
+      setUser({ publicKey: address, role: 'public' });
       setIsConnected(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Connection failed');
     }
-  };
+  }, []);
 
-  const logout = () => {
+  const logout = useCallback(() => {
+    StellarWalletsKit.disconnect().catch(() => {
+      // Best-effort; local state is cleared regardless.
+    });
     setUser(null);
     setIsConnected(false);
-  };
+  }, []);
+
+  const signer = user ? makeSigner(user.publicKey) : null;
 
   return (
-    <WalletContext.Provider value={{ user, isConnected, login, logout, error }}>
+    <WalletContext.Provider value={{ user, isConnected, login, logout, error, signer }}>
       {children}
     </WalletContext.Provider>
   );
