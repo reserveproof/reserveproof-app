@@ -2,6 +2,8 @@
 
 Public dashboard for ReserveProof on-chain proof-of-reserves attestations.
 
+**Live**: https://reserveproof-app.vercel.app (testnet)
+
 ## Overview
 
 ReserveProof App is a Next.js web application that provides:
