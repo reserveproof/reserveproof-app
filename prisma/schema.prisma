@@ -1,0 +1,80 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Issuer {
+  id                       String   @id
+  address                  String   @unique
+  name                     String
+  assetAddress             String
+  attestationWindowSeconds Int
+  minSigners               Int
+  status                   String   @default("Active") // "Active" or "Suspended"
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+
+  attestations Attestation[]
+  requiredAttestors IssuerAttestor[]
+}
+
+model IssuerAttestor {
+  id       String @id @default(cuid())
+  issuerId String
+  attestor String
+
+  issuer Issuer @relation(fields: [issuerId], references: [id], onDelete: Cascade)
+
+  @@unique([issuerId, attestor])
+}
+
+model Attestation {
+  id                   String   @id
+  issuerId             String
+  reserveBalance       BigInt
+  outstandingSupply    BigInt
+  supportingDocHash    String
+  state                String   @default("Pending") // "Pending" or "Finalized"
+  submittedAt          Int
+  finalizedAt          Int?
+  signerCount          Int      @default(0)
+  ledgerSequence       Int
+  transactionHash      String
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  issuer Issuer       @relation(fields: [issuerId], references: [id], onDelete: Cascade)
+  signers AttestationSigner[]
+
+  @@index([issuerId])
+  @@index([state])
+  @@index([finalizedAt])
+}
+
+model AttestationSigner {
+  id            String @id @default(cuid())
+  attestationId String
+  signer        String
+  signedAt      Int
+
+  attestation Attestation @relation(fields: [attestationId], references: [id], onDelete: Cascade)
+
+  @@unique([attestationId, signer])
+}
+
+model StalenessFlagEvent {
+  id        String   @id @default(cuid())
+  issuerId  String
+  flaggedAt Int
+  flaggedBy String?
+  createdAt DateTime @default(now())
+
+  @@index([issuerId])
+}
