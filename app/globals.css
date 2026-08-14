@@ -2,14 +2,113 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --bg: #f5f6ef;
+  --surface: #ffffff;
+  --surface-2: #fbfaf3;
+  --ink: #16241d;
+  --ink-muted: #5b655c;
+  --ink-faint: #8b9389;
+  --forest: #1f3d31;
+  --forest-deep: #14261d;
+  --forest-tint: #e7eee7;
+  --navy: #223752;
+  --navy-tint: #e7ecf2;
+  --amber: #b96f24;
+  --amber-deep: #9a5c1c;
+  --amber-tint: #f5e6d1;
+  --amber-ink: #4a2e0d;
+  --success: #3f8f5c;
+  --success-tint: #e4f1e7;
+  --danger: #b3452f;
+  --danger-tint: #f6e4de;
+  --line: #e1dfd2;
+  --line-strong: #cbc8b7;
+  --focus-ring: 31, 61, 49;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --bg: #0f1712;
+    --surface: #16211b;
+    --surface-2: #1b2721;
+    --ink: #ecefe7;
+    --ink-muted: #a9b3a5;
+    --ink-faint: #798377;
+    --forest: #7cb69a;
+    --forest-deep: #9ccbb2;
+    --forest-tint: #1e2e26;
+    --navy: #92abce;
+    --navy-tint: #1c2734;
+    --amber: #e0a054;
+    --amber-deep: #edb876;
+    --amber-tint: #3a2c1b;
+    --amber-ink: #fbebd6;
+    --success: #6fbe8d;
+    --success-tint: #17281c;
+    --danger: #e28569;
+    --danger-tint: #33201a;
+    --line: #2a3830;
+    --line-strong: #3b4a40;
+    --focus-ring: 124, 182, 154;
+  }
+}
+:root[data-theme='dark'] {
+  --bg: #0f1712;
+  --surface: #16211b;
+  --surface-2: #1b2721;
+  --ink: #ecefe7;
+  --ink-muted: #a9b3a5;
+  --ink-faint: #798377;
+  --forest: #7cb69a;
+  --forest-deep: #9ccbb2;
+  --forest-tint: #1e2e26;
+  --navy: #92abce;
+  --navy-tint: #1c2734;
+  --amber: #e0a054;
+  --amber-deep: #edb876;
+  --amber-tint: #3a2c1b;
+  --amber-ink: #fbebd6;
+  --success: #6fbe8d;
+  --success-tint: #17281c;
+  --danger: #e28569;
+  --danger-tint: #33201a;
+  --line: #2a3830;
+  --line-strong: #3b4a40;
+  --focus-ring: 124, 182, 154;
+}
+
 html {
   scroll-behavior: smooth;
 }
 
 body {
-  @apply bg-white text-gray-900;
+  background: var(--bg);
+  color: var(--ink);
 }
 
 a {
-  @apply text-blue-600 hover:text-blue-700 underline;
+  color: var(--forest);
+  text-decoration: none;
+}
+
+::selection {
+  background: var(--amber-tint);
+  color: var(--amber-ink);
+}
+
+:focus-visible {
+  outline: 2px solid rgb(var(--focus-ring));
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
 }

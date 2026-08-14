@@ -36,20 +36,26 @@ const NETWORK_PASSPHRASE = process.env.NEXT_PUBLIC_NETWORK_PASSPHRASE ?? Network
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <WalletProvider>
-      <div className="min-h-screen bg-white">
-        <header className="border-b border-gray-200 bg-gray-50 px-6 py-4">
-          <div className="max-w-7xl mx-auto flex items-center justify-between">
-            <h1 className="text-2xl font-bold">🔐 ReserveProof</h1>
-            <nav className="flex gap-6">
-              <a href="/" className="text-sm font-medium text-gray-700 hover:text-gray-900">Dashboard</a>
-              <a href="/issuers" className="text-sm font-medium text-gray-700 hover:text-gray-900">Issuers</a>
-              <a href="/attest" className="text-sm font-medium text-gray-700 hover:text-gray-900">Attest</a>
-              <a href="/admin" className="text-sm font-medium text-gray-700 hover:text-gray-900">Admin</a>
+      <div className="min-h-screen bg-bg text-ink">
+        <header className="sticky top-0 z-30 border-b border-line bg-surface px-6 py-4">
+          <div className="max-w-6xl mx-auto flex items-center justify-between gap-6">
+            <div className="flex items-center gap-2.5 font-display font-semibold text-lg text-forest-deep">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <circle cx="12" cy="12" r="9.5" stroke="currentColor" strokeWidth="1.6" />
+                <path d="M12 6.5V12L15.5 14" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+              </svg>
+              ReserveProof
+            </div>
+            <nav className="flex gap-7">
+              <a href="/" className="text-sm font-semibold text-ink-muted hover:text-forest transition-colors">Dashboard</a>
+              <a href="/issuers" className="text-sm font-semibold text-ink-muted hover:text-forest transition-colors">Issuers</a>
+              <a href="/attest" className="text-sm font-semibold text-ink-muted hover:text-forest transition-colors">Attest</a>
+              <a href="/admin" className="text-sm font-semibold text-ink-muted hover:text-forest transition-colors">Admin</a>
             </nav>
             <WalletButton />
           </div>
         </header>
-        <main className="max-w-7xl mx-auto px-6 py-8">
+        <main className="max-w-6xl mx-auto px-6 py-10">
           {children}
         </main>
       </div>
@@ -131,12 +137,15 @@ function WalletButton() {
   if (isConnected && user) {
     return (
       <div className="flex items-center gap-3">
-        <span className="text-sm text-gray-600">{user.publicKey.slice(0, 6)}...</span>
+        <span className="flex items-center gap-2 text-sm font-medium text-ink bg-surface-2 border border-line rounded-sm px-3 py-1.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-success" aria-hidden="true" />
+          {user.publicKey.slice(0, 6)}...{user.publicKey.slice(-4)}
+        </span>
         <button
           onClick={logout}
-          className="px-3 py-1 text-sm font-medium text-red-700 bg-red-50 rounded hover:bg-red-100"
+          className="px-3 py-1.5 text-sm font-semibold text-danger bg-danger-tint rounded-sm hover:opacity-80 transition-opacity"
         >
-          Logout
+          Disconnect
         </button>
       </div>
     );
@@ -145,7 +154,7 @@ function WalletButton() {
   return (
     <button
       onClick={login}
-      className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700"
+      className="px-4 py-2 text-sm font-semibold text-white bg-amber rounded-sm shadow-sm hover:bg-amber-deep transition-colors"
     >
       Connect Wallet
     </button>
